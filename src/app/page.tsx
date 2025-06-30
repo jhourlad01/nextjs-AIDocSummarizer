@@ -1,103 +1,379 @@
-import Image from "next/image";
+'use client';
+
+import {
+  Description,
+  Upload,
+  Delete,
+  Download,
+  Add,
+  Close,
+  CloudUpload,
+} from '@mui/icons-material';
+import {
+  Box,
+  Paper,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  Button,
+  IconButton,
+  Chip,
+  Card,
+  CardContent,
+  AppBar,
+  Toolbar,
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import { useState } from 'react';
+
+interface FileItem {
+  id: string;
+  name: string;
+  size: string;
+  uploadedAt: string;
+  status: 'uploading' | 'processing' | 'completed' | 'error';
+  summary?: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [files, setFiles] = useState<FileItem[]>([
+    {
+      id: '1',
+      name: 'sample-document.pdf',
+      size: '2.3 MB',
+      uploadedAt: '2024-01-15',
+      status: 'completed',
+      summary:
+        'This document discusses the implementation of machine learning algorithms in modern software development. It covers various approaches including supervised learning, unsupervised learning, and reinforcement learning. The document provides practical examples and best practices for integrating ML into existing systems.',
+    },
+    {
+      id: '2',
+      name: 'research-paper.docx',
+      size: '1.8 MB',
+      uploadedAt: '2024-01-14',
+      status: 'completed',
+      summary:
+        'A comprehensive analysis of renewable energy sources and their impact on global sustainability. The research examines solar, wind, and hydroelectric power generation methods, comparing their efficiency, cost-effectiveness, and environmental benefits.',
+    },
+  ]);
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(files[0]);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleFileSelect = (file: FileItem) => {
+    setSelectedFile(file);
+  };
+
+  const handleDeleteFile = (fileId: string) => {
+    setFiles(files.filter(f => f.id !== fileId));
+    if (selectedFile?.id === fileId) {
+      setSelectedFile(
+        files.length > 1 ? files.find(f => f.id !== fileId) || null : null
+      );
+    }
+  };
+
+  const getStatusColor = (status: FileItem['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'success';
+      case 'processing':
+        return 'warning';
+      case 'uploading':
+        return 'info';
+      case 'error':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusText = (status: FileItem['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'processing':
+        return 'Processing';
+      case 'uploading':
+        return 'Uploading';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* App Bar */}
+      <AppBar position="static">
+        <Toolbar>
+          <Description sx={{ mr: 2 }} />
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            AI Document Summarizer
+          </Typography>
+          <Button
+            color="inherit"
+            startIcon={<Upload />}
+            onClick={() => setUploadDialogOpen(true)}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            Upload Document
+          </Button>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* File List Sidebar */}
+        <Paper
+          sx={{
+            width: 320,
+            overflow: 'auto',
+            borderRight: 1,
+            borderColor: 'divider',
+          }}
+        >
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="h6" gutterBottom>
+              Documents ({files.length})
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Upload documents to get AI-powered summaries
+            </Typography>
+          </Box>
+
+          <List sx={{ p: 0 }}>
+            {files.map((file, index) => (
+              <Box key={file.id}>
+                <ListItem
+                  button
+                  selected={selectedFile?.id === file.id}
+                  onClick={() => handleFileSelect(file)}
+                  sx={{
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    py: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                      mb: 1,
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      <Description color="primary" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={file.name}
+                      secondary={`${file.size} • ${file.uploadedAt}`}
+                      sx={{ flexGrow: 1 }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleDeleteFile(file.id);
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <Chip
+                    label={getStatusText(file.status)}
+                    color={
+                      getStatusColor(file.status) as
+                        | 'success'
+                        | 'warning'
+                        | 'info'
+                        | 'error'
+                        | 'default'
+                    }
+                    size="small"
+                    sx={{ alignSelf: 'flex-start' }}
+                  />
+                </ListItem>
+                {index < files.length - 1 && <Divider />}
+              </Box>
+            ))}
+          </List>
+        </Paper>
+
+        {/* Main Content Area */}
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          {selectedFile ? (
+            <>
+              {/* File Header */}
+              <Paper sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Box>
+                    <Typography variant="h6">{selectedFile.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedFile.size} • Uploaded {selectedFile.uploadedAt}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Button
+                      startIcon={<Download />}
+                      variant="outlined"
+                      size="small"
+                      sx={{ mr: 1 }}
+                    >
+                      Download
+                    </Button>
+                    <Chip
+                      label={getStatusText(selectedFile.status)}
+                      color={
+                        getStatusColor(selectedFile.status) as
+                          | 'success'
+                          | 'warning'
+                          | 'info'
+                          | 'error'
+                          | 'default'
+                      }
+                    />
+                  </Box>
+                </Box>
+              </Paper>
+
+              {/* Summary Content */}
+              <Box sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
+                <Typography variant="h5" gutterBottom>
+                  AI Summary
+                </Typography>
+                <Card>
+                  <CardContent>
+                    <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+                      {selectedFile.summary ||
+                        'No summary available yet. The document is being processed...'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+            </>
+          ) : (
+            /* Empty State */
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                p: 3,
+              }}
+            >
+              <CloudUpload
+                sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }}
+              />
+              <Typography variant="h6" gutterBottom>
+                No Document Selected
+              </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                textAlign="center"
+                sx={{ mb: 3 }}
+              >
+                Select a document from the list to view its AI-generated
+                summary, or upload a new document to get started.
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => setUploadDialogOpen(true)}
+              >
+                Upload Document
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      {/* Upload Dialog */}
+      <Dialog
+        open={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Upload Document
+          <IconButton
+            aria-label="close"
+            onClick={() => setUploadDialogOpen(false)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+            }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <CloudUpload
+              sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Typography variant="h6" gutterBottom>
+              Drop your document here
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Supported formats: PDF, DOCX, TXT, RTF
+            </Typography>
+            <Button variant="outlined" component="label" startIcon={<Upload />}>
+              Choose File
+              <input
+                type="file"
+                hidden
+                accept=".pdf,.docx,.txt,.rtf"
+                multiple
+              />
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => setUploadDialogOpen(false)}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            Upload
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Floating Action Button */}
+      <Fab
+        color="primary"
+        aria-label="upload"
+        sx={{ position: 'fixed', bottom: 16, right: 16 }}
+        onClick={() => setUploadDialogOpen(true)}
+      >
+        <Add />
+      </Fab>
+    </Box>
   );
 }
