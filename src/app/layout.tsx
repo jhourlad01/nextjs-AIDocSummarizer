@@ -1,8 +1,8 @@
-import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+
 import './globals.css';
+import MuiProvider from './MuiProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,22 +19,6 @@ export const metadata: Metadata = {
   description: 'Upload documents and get AI-powered summaries',
 };
 
-// Create a Material UI theme
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-  typography: {
-    fontFamily: geistSans.style.fontFamily,
-  },
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,10 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          {children}
-        </ThemeProvider>
+        <MuiProvider>{children}</MuiProvider>
       </body>
     </html>
   );
