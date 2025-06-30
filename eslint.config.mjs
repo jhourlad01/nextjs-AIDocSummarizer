@@ -51,6 +51,13 @@ const eslintConfig = [
         }
       ]
     }
+  },
+  // Disable no-require-imports for JS config files
+  {
+    files: ["*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off"
+    }
   }
 ];
 
