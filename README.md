@@ -1,4 +1,12 @@
+# AI Document Summarizer
+
+A Next.js application for summarizing documents using AI.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Repository
+
+This project is part of the [nextjs-AIDocSummarizer](https://github.com/jhourlad01/nextjs-AIDocSummarizer) repository.
 
 ## Getting Started
 
